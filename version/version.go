@@ -5,7 +5,7 @@ import (
 )
 
 var (
-	// Version semver for syncrepos (set through go build -ldflags)
+	// Version semver (set through go build -ldflags)
 	Version string
 	// BuildUser is the user login who initiated the build (set through go build -ldflags)
 	BuildUser string

@@ -56,7 +56,7 @@ func main() {
 		article := &article{e: e}
 		title := article.title()
 		//fmt.Printf("Check title '%s' with query '%s'\n", title, query)
-		if strings.Contains(title, query) {
+		if strings.Contains(strings.ToLower(title), query) {
 			articles = append(articles, article)
 		}
 	})

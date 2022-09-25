@@ -31,6 +31,12 @@ func main() {
 	c.OnRequest(func(r *colly.Request) {
 		log.Println("Visiting ", r.URL.String())
 	})
+
+	// Step 2.1. If error occurred during the request, handle it!
+	c.OnError(func(r *colly.Response, err error) {
+		log.Println("Request URL: ", r.Request.URL, " failed with response: ", r, "\nError: ", err)
+	})
+
 	if err := c.Visit("https://github.blog/changelog/"); err != nil {
 		log.Fatal(err)
 	}

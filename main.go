@@ -107,8 +107,29 @@ var ignored = map[string]bool{
 	"br": true,
 }
 
+func hasParentNamed(parentName string, names ...string) bool {
+	//fmt.Printf("Parent name '%s'\n", selname)
+	return hasSelNamed(parentName, names...)
+}
+
+func hasPrevNamed(prevName string, names ...string) bool {
+	//fmt.Printf("Prev name '%s'\n", selname)
+	return hasSelNamed(prevName, names...)
+}
+
+func hasSelNamed(selname string, names ...string) bool {
+	for _, name := range names {
+		if selname == name {
+			return true
+		}
+	}
+	return false
+}
+
 func visitNodes(sel *goquery.Selection) string {
 	m := ""
+	parentName := goquery.NodeName(sel)
+	prevName := ""
 	sel.Contents().Each(func(i int, sel *goquery.Selection) {
 		nodeName := goquery.NodeName(sel)
 		switch nodeName {
@@ -117,7 +138,7 @@ func visitNodes(sel *goquery.Selection) string {
 			if strings.TrimSpace(txt) != "" {
 				r := strings.NewReplacer(". ", ".  \n> ")
 				txt = r.Replace(txt)
-				if goquery.NodeName(sel.Parent()) != "li" && goquery.NodeName(sel.Prev()) != "code" {
+				if !hasParentNamed(parentName, "li", "a") && !hasPrevNamed(prevName, "code", "a") {
 					m = m + "> "
 				}
 				m = m + txt
@@ -130,8 +151,8 @@ func visitNodes(sel *goquery.Selection) string {
 		case "img":
 			alt := sel.AttrOr("alt", "")
 			src := sel.AttrOr("src", "")
-			// fmt.Printf("PREV '%s'\n", goquery.NodeName(sel.Prev()))
-			if goquery.NodeName(sel.Prev()) == "br" {
+			//fmt.Printf("PREV '%s'\n", prevName)
+			if !hasPrevNamed(prevName, "br", "") {
 				m = m + ">\n"
 			}
 			m = m + "> " + src
@@ -143,9 +164,12 @@ func visitNodes(sel *goquery.Selection) string {
 		case "li":
 			m = m + "> - " + visitNodes(sel) + "\n"
 		case "a":
-			txt := sel.Text()
+			txt := visitNodes(sel)
 			href := sel.AttrOr("href", "")
-			m = m + "> " + fmt.Sprintf("![%s](%s)", txt, href)
+			if !hasPrevNamed(prevName, "#text") {
+				m = m + "> "
+			}
+			m = m + fmt.Sprintf("![%s](%s)", txt, href)
 		case "code":
 			txt := sel.Text()
 			m = m + fmt.Sprintf("`%s`", txt)
@@ -155,6 +179,7 @@ func visitNodes(sel *goquery.Selection) string {
 			}
 		}
 		//fmt.Printf("m for name '%s': '%s'\n", nodeName, m)
+		prevName = goquery.NodeName(sel)
 	})
 	return m
 }

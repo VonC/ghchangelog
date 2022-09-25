@@ -115,6 +115,8 @@ func visitNodes(sel *goquery.Selection) string {
 		case "#text":
 			txt := sel.Text()
 			if strings.TrimSpace(txt) != "" {
+				r := strings.NewReplacer(". ", ".  \n> ")
+				txt = r.Replace(txt)
 				m = m + txt
 			}
 		case "br":

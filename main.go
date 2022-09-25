@@ -40,4 +40,6 @@ func main() {
 	if err := c.Visit("https://github.blog/changelog/"); err != nil {
 		log.Fatal(err)
 	}
+	// Wait until threads are finished
+	c.Wait()
 }

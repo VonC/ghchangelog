@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/gocolly/colly/v2"
 )
@@ -85,5 +86,12 @@ func (a *article) title() string {
 
 func (a *article) markdown() string {
 	m := "> ## " + a.title()
+	e := a.e
+	t, err := time.Parse("2006-01-02", e.ChildAttr("time", "datetime"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	date := t.Format("Jan 2006")
+	m = m + " (" + date + ")\n>\n"
 	return m
 }

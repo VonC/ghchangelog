@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"ghchangelog/version"
 	"log"
+	"net/url"
 	"os"
 	"strings"
 
@@ -23,8 +24,18 @@ func main() {
 		os.Exit(0)
 	}
 
+	query := strings.Join(os.Args[1:], " ")
+	query = strings.ToLower(query)
+
+	ghurl := "https://github.blog/changelog/"
+	u, err := url.Parse(ghurl)
+	if err != nil {
+		log.Fatal(err)
+	}
+	ghdomain := u.Hostname()
+
 	c := colly.NewCollector(
-		colly.AllowedDomains("github.blog"),
+		colly.AllowedDomains(ghdomain),
 		colly.MaxDepth(0),
 	)
 	// Step 2. Perform some logic before REQUEST Is made

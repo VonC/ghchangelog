@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/gocolly/colly/v2"
 )
 
@@ -83,15 +84,63 @@ func main() {
 func (a *article) title() string {
 	return a.e.ChildText("h2.h5-mktg")
 }
+func (a *article) href() string {
+	return a.e.ChildAttr("h2 > a", "href")
+}
 
 func (a *article) markdown() string {
-	m := "> ## " + a.title()
 	e := a.e
 	t, err := time.Parse("2006-01-02", e.ChildAttr("time", "datetime"))
 	if err != nil {
 		log.Fatal(err)
 	}
-	date := t.Format("Jan 2006")
-	m = m + " (" + date + ")\n>\n"
+	date := t.Format("Jan. 2006")
+	m := fmt.Sprintf("> ## [%s](%s) (%s)\n", a.title(), a.href(), date)
+
+	body := e.DOM.Find(".post__content")
+	//fmt.Printf("Body '%+v'\n", body)
+	m = m + visitNodes(body)
+	return m
+}
+
+var ignored = map[string]bool{
+	"br": true,
+}
+
+func visitNodes(sel *goquery.Selection) string {
+	m := ""
+	sel.Contents().Each(func(i int, sel *goquery.Selection) {
+		nodeName := goquery.NodeName(sel)
+		switch nodeName {
+		case "#text":
+			txt := sel.Text()
+			if strings.TrimSpace(txt) != "" {
+				m = m + txt
+			}
+		case "br":
+			m = m + "  \n"
+		case "p":
+			m = m + ">\n> " + visitNodes(sel) + "\n"
+		case "img":
+			alt := sel.AttrOr("alt", "")
+			src := sel.AttrOr("src", "")
+			m = m + ">\n> " + src
+			if alt != "" {
+				m = m + " -- " + alt
+			}
+		case "a":
+			txt := sel.Text()
+			href := sel.AttrOr("href", "")
+			m = m + fmt.Sprintf("![%s](%s)", txt, href)
+		case "code":
+			txt := sel.Text()
+			m = m + fmt.Sprintf("`%s`", txt)
+		default:
+			if !ignored[nodeName] {
+				fmt.Printf("Unknown node '%s'\n", nodeName)
+			}
+		}
+		//fmt.Printf("m for name '%s': '%s'\n", nodeName, m)
+	})
 	return m
 }

@@ -117,23 +117,35 @@ func visitNodes(sel *goquery.Selection) string {
 			if strings.TrimSpace(txt) != "" {
 				r := strings.NewReplacer(". ", ".  \n> ")
 				txt = r.Replace(txt)
+				if goquery.NodeName(sel.Parent()) != "li" && goquery.NodeName(sel.Prev()) != "code" {
+					m = m + "> "
+				}
 				m = m + txt
 			}
 		case "br":
 			m = m + "  \n"
 		case "p":
-			m = m + ">\n> " + visitNodes(sel) + "\n"
+			nodes := visitNodes(sel)
+			m = m + ">\n" + nodes + "\n"
 		case "img":
 			alt := sel.AttrOr("alt", "")
 			src := sel.AttrOr("src", "")
-			m = m + ">\n> " + src
+			// fmt.Printf("PREV '%s'\n", goquery.NodeName(sel.Prev()))
+			if goquery.NodeName(sel.Prev()) == "br" {
+				m = m + ">\n"
+			}
+			m = m + "> " + src
 			if alt != "" {
 				m = m + " -- " + alt
 			}
+		case "ul":
+			m = m + ">\n" + visitNodes(sel)
+		case "li":
+			m = m + "> - " + visitNodes(sel) + "\n"
 		case "a":
 			txt := sel.Text()
 			href := sel.AttrOr("href", "")
-			m = m + fmt.Sprintf("![%s](%s)", txt, href)
+			m = m + "> " + fmt.Sprintf("![%s](%s)", txt, href)
 		case "code":
 			txt := sel.Text()
 			m = m + fmt.Sprintf("`%s`", txt)

@@ -26,6 +26,10 @@ func main() {
 	c := colly.NewCollector(
 		colly.AllowedDomains("github.blog"),
 	)
+	// Step 2. Perform some logic before REQUEST Is made
+	c.OnRequest(func(r *colly.Request) {
+		log.Println("Visiting ", r.URL.String())
+	})
 	if err := c.Visit("https://github.blog/changelog/"); err != nil {
 		log.Fatal(err)
 	}

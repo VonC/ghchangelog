@@ -2,5 +2,9 @@
 setlocal enabledelayedexpansion
 call build.bat
 if not "%ERRORLEVEL%"=="0" ( goto:eof )
-call run.bat %*
+if "%1" == "" (
+    call run.bat timezone
+) else (
+    call run.bat %*
+)
 if not "%ERRORLEVEL%"=="0" ( goto:eof )

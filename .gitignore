@@ -15,6 +15,7 @@ a
 *.csv
 *.xlsx
 *.txt
+!version.txt
 cover.out
 !/config.example.json
 !/LICENSE.TXT

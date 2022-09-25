@@ -25,6 +25,7 @@ func main() {
 
 	c := colly.NewCollector(
 		colly.AllowedDomains("github.blog"),
+		colly.MaxDepth(0),
 	)
 	// Step 2. Perform some logic before REQUEST Is made
 	c.OnRequest(func(r *colly.Request) {

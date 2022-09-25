@@ -11,6 +11,12 @@ import (
 	"github.com/gocolly/colly/v2"
 )
 
+type article struct {
+	e *colly.HTMLElement
+}
+
+type articles []*article
+
 func main() {
 	fmt.Println("ghchangelog")
 	if len(os.Args) == 1 {
@@ -38,14 +44,19 @@ func main() {
 		colly.AllowedDomains(ghdomain),
 		colly.MaxDepth(0),
 	)
-	// Step 2. Perform some logic before REQUEST Is made
-	c.OnRequest(func(r *colly.Request) {
-		log.Println("Visiting ", r.URL.String())
-	})
-
-	// Step 2.1. If error occurred during the request, handle it!
 	c.OnError(func(r *colly.Response, err error) {
 		log.Println("Request URL: ", r.Request.URL, " failed with response: ", r, "\nError: ", err)
+	})
+
+	articles := make(articles, 0)
+	// https://htmlcheatsheet.com/jquery/
+	c.OnHTML("article", func(e *colly.HTMLElement) { //class that contains wanted info
+		article := &article{e: e}
+		title := article.title()
+		//fmt.Printf("Check title '%s' with query '%s'\n", title, query)
+		if strings.Contains(title, query) {
+			articles = append(articles, article)
+		}
 	})
 
 	if err := c.Visit("https://github.blog/changelog/"); err != nil {
@@ -53,4 +64,26 @@ func main() {
 	}
 	// Wait until threads are finished
 	c.Wait()
+
+	if len(articles) == 0 {
+		fmt.Printf("No article with title query '%s' found in '%s'", query, ghurl)
+		os.Exit(0)
+	}
+	if len(articles) > 1 {
+		fmt.Printf("Multiples articles with title query '%s' found in '%s'", query, ghurl)
+		for _, article := range articles {
+			fmt.Println(article.title())
+		}
+		os.Exit(0)
+	}
+	fmt.Printf("%s", articles[0].markdown())
+}
+
+func (a *article) title() string {
+	return a.e.ChildText("h2.h5-mktg")
+}
+
+func (a *article) markdown() string {
+	m := "> ## " + a.title()
+	return m
 }

@@ -67,13 +67,13 @@ func main() {
 	c.Wait()
 
 	if len(articles) == 0 {
-		fmt.Printf("No article with title query '%s' found in '%s'", query, ghurl)
+		fmt.Printf("\nNo article with title query '%s' found in '%s'", query, ghurl)
 		os.Exit(0)
 	}
 	if len(articles) > 1 {
-		fmt.Printf("Multiples articles with title query '%s' found in '%s'", query, ghurl)
+		fmt.Printf("\nWARNING:\n  Multiples articles with title query '%s' found in '%s':\n\n", query, ghurl)
 		for _, article := range articles {
-			fmt.Println(article.title())
+			fmt.Println("- " + article.title())
 		}
 		os.Exit(0)
 	}

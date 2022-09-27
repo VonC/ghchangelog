@@ -170,7 +170,7 @@ func visitNodes(sel *goquery.Selection) string {
 			if !hasPrevNamed(prevName, "#text") {
 				m = m + "> "
 			}
-			m = m + fmt.Sprintf("![%s](%s)", txt, href)
+			m = m + fmt.Sprintf("[%s](%s)", txt, href)
 		case "code":
 			txt := sel.Text()
 			m = m + fmt.Sprintf("`%s`", txt)

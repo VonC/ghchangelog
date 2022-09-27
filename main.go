@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	"ghchangelog/version"
 	"log"
 	"net/url"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/VonC/ghchangelog/version"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/gocolly/colly/v2"

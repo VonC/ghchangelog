@@ -1,4 +1,4 @@
-module ghchangelog
+module github.com/VonC/ghchangelog
 
 go 1.18
 

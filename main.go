@@ -139,7 +139,7 @@ func visitNodes(sel *goquery.Selection) string {
 			if strings.TrimSpace(txt) != "" {
 				r := strings.NewReplacer(". ", ".  \n> ")
 				txt = r.Replace(txt)
-				if !hasParentNamed(parentName, "li", "a") && !hasPrevNamed(prevName, "code", "a") {
+				if !hasParentNamed(parentName, "li", "a") && !hasPrevNamed(prevName, "code", "a", "strong") {
 					m = m + "> "
 				}
 				m = m + txt
@@ -174,6 +174,9 @@ func visitNodes(sel *goquery.Selection) string {
 		case "code":
 			txt := sel.Text()
 			m = m + fmt.Sprintf("`%s`", txt)
+		case "strong":
+			txt := sel.Text()
+			m = m + fmt.Sprintf("**%s**", txt)
 		default:
 			if !ignored[nodeName] {
 				fmt.Printf("Unknown node '%s'\n", nodeName)

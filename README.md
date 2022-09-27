@@ -41,4 +41,4 @@ No need for `"..."` (as in `ghchangelog "zones avail"`).
 
 ## installation
 
-    go install github.com/VonC/ghchangelog
+    go install github.com/VonC/ghchangelog@latest

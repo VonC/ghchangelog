@@ -26,7 +26,7 @@ That will extract the article with '`timezone`' in its title (case insensitive),
 >
 > https://i0.wp.com/user-images.githubusercontent.com/4021812/191612407-58d90e74-0cdb-4672-9686-8680f3355c18.png?w=535&ssl=1 -- local timezone display on profile
 >
-> ![Learn more about personalizing your profile](https://docs.github.com/en/account-and-profile/setting-up-and-managing-your-github-profile/customizing-your-profile/personalizing-your-profile).
+> [Learn more about personalizing your profile](https://docs.github.com/en/account-and-profile/setting-up-and-managing-your-github-profile/customizing-your-profile/personalizing-your-profile).
 ```
 
 That would work with any portion of the title (again, case insensitive): 

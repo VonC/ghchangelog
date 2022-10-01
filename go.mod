@@ -4,6 +4,8 @@ go 1.18
 
 require github.com/gocolly/colly/v2 v2.1.0
 
+require github.com/atotto/clipboard v0.1.4
+
 require (
 	github.com/PuerkitoBio/goquery v1.5.1
 	github.com/andybalholm/cascadia v1.2.0 // indirect

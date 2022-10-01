@@ -11,6 +11,7 @@ import (
 	"github.com/VonC/ghchangelog/version"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/atotto/clipboard"
 	"github.com/gocolly/colly/v2"
 )
 
@@ -79,7 +80,11 @@ func main() {
 		}
 		os.Exit(0)
 	}
-	fmt.Printf("%s", articles[0].markdown())
+	text := articles[0].markdown()
+	fmt.Println(text)
+	if err = clipboard.WriteAll(text); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func (a *article) title() string {

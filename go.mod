@@ -7,6 +7,11 @@ require github.com/gocolly/colly/v2 v2.1.0
 require github.com/atotto/clipboard v0.1.4
 
 require (
+	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d // indirect
+	gopkg.in/toast.v1 v1.0.0-20180812000517-0a84660828b2
+)
+
+require (
 	github.com/PuerkitoBio/goquery v1.5.1
 	github.com/andybalholm/cascadia v1.2.0 // indirect
 	github.com/antchfx/htmlquery v1.2.3 // indirect

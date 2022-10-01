@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/url"
 	"os"
+	"runtime"
 	"strings"
 	"time"
 
@@ -13,6 +14,8 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/atotto/clipboard"
 	"github.com/gocolly/colly/v2"
+
+	"gopkg.in/toast.v1"
 )
 
 type article struct {
@@ -84,6 +87,17 @@ func main() {
 	fmt.Println(text)
 	if err = clipboard.WriteAll(text); err != nil {
 		log.Fatal(err)
+	}
+	if runtime.GOOS == "windows" {
+		notification := toast.Notification{
+			AppID:   "ghchangelog",
+			Title:   "Copied",
+			Message: "GitHub Changelog entry copied to the clipboard",
+		}
+		err = notification.Push()
+		if err != nil {
+			log.Fatalln(err)
+		}
 	}
 }
 

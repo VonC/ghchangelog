@@ -5,10 +5,13 @@ Convert GitHub changelog entry to markdown
 ## Example
 
     ghchangelog timezone
+    # or directly through the URL
+    ghchangelog https://github.blog/changelog/2022-09-23-local-timezones-available-on-profiles/
     
-That will extract the article with '`timezone`' in its title (case insensitive), as listed at https://github.blog/changelog/
+That will extract as markdown the article with '`timezone`' in its title (case insensitive), as listed at https://github.blog/changelog/   
+Or will extract as markdown the first article listed at the URL (like https://github.blog/changelog/2022-09-23-local-timezones-available-on-profiles/)
 
-- if they are none, say so and exit
+- if they are none (or the URL does not exist), say so and exit
 - if they are several, list the titles and exit
 - it there is one (like "[Local timezones available on profiles](https://github.blog/changelog/2022-09-23-local-timezones-available-on-profiles/)"), convert it to markdown:
 

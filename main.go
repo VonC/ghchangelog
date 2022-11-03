@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/url"
 	"os"
+	"regexp"
 	"runtime"
 	"strings"
 	"time"
@@ -19,7 +20,11 @@ import (
 )
 
 type article struct {
-	e *colly.HTMLElement
+	e       *colly.HTMLElement
+	title   string
+	href    string
+	date    string
+	fromURL bool
 }
 
 type articles []*article
@@ -37,10 +42,19 @@ func main() {
 		os.Exit(0)
 	}
 
-	query := strings.Join(os.Args[1:], " ")
-	query = strings.ToLower(query)
-
 	ghurl := "https://github.blog/changelog/"
+	iquery := 1
+
+	if len(os.Args) >= 2 && strings.HasPrefix(os.Args[1], "https") {
+		ghurl = os.Args[1]
+		iquery = 2
+	}
+
+	query := ""
+	if len(os.Args) > 2 || iquery == 1 {
+		query = strings.Join(os.Args[iquery:], " ")
+		query = strings.ToLower(query)
+	}
 	u, err := url.Parse(ghurl)
 	if err != nil {
 		log.Fatal(err)
@@ -52,21 +66,29 @@ func main() {
 		colly.MaxDepth(0),
 	)
 	c.OnError(func(r *colly.Response, err error) {
-		log.Println("Request URL: ", r.Request.URL, " failed with response: ", r, "\nError: ", err)
+		log.Println("Request URL: ", r.Request.URL, " failed with response: ", r.StatusCode, "\nError: ", err)
 	})
 
 	articles := make(articles, 0)
+	goqueryselector := "article"
+	if iquery == 2 {
+		goqueryselector = "html"
+	}
 	// https://htmlcheatsheet.com/jquery/
-	c.OnHTML("article", func(e *colly.HTMLElement) { //class that contains wanted info
+	c.OnHTML(goqueryselector, func(e *colly.HTMLElement) { //class that contains wanted info
 		article := &article{e: e}
-		title := article.title()
+		if iquery == 2 {
+			article.href = ghurl
+			article.fromURL = true
+		}
+		title := article.getTitle()
 		//fmt.Printf("Check title '%s' with query '%s'\n", title, query)
 		if strings.Contains(strings.ToLower(title), query) {
 			articles = append(articles, article)
 		}
 	})
 
-	if err := c.Visit("https://github.blog/changelog/"); err != nil {
+	if err := c.Visit(ghurl); err != nil {
 		log.Fatal(err)
 	}
 	// Wait until threads are finished
@@ -79,7 +101,7 @@ func main() {
 	if len(articles) > 1 {
 		fmt.Printf("\nWARNING:\n  Multiples articles with title query '%s' found in '%s':\n\n", query, ghurl)
 		for _, article := range articles {
-			fmt.Println("- " + article.title())
+			fmt.Println("- " + article.getTitle())
 		}
 		os.Exit(0)
 	}
@@ -101,23 +123,55 @@ func main() {
 	}
 }
 
-func (a *article) title() string {
-	return a.e.ChildText("h2.h5-mktg")
+func (a *article) getTitle() string {
+	if a.title != "" {
+		return a.title
+	}
+	if a.fromURL {
+		a.title = a.e.ChildText("h1")
+	} else {
+		a.title = a.e.ChildText("h2.h5-mktg")
+
+	}
+	if a.title == "" {
+		a.title = "<no title detected>"
+	}
+	return a.title
 }
-func (a *article) href() string {
-	return a.e.ChildAttr("h2 > a", "href")
+func (a *article) getHref() string {
+	if a.href != "" {
+		return a.href
+	}
+	a.href = a.e.ChildAttr("h2 > a", "href")
+	return a.href
+}
+
+// reDate: https://regex101.com/r/hQ3tKo/1
+var reDate = regexp.MustCompile(`(?m)\d{4}-\d{2}-\d{2}`)
+
+func (a *article) getDate() string {
+	if a.date != "" {
+		return a.date
+	}
+	href := a.getHref()
+	datetime := reDate.FindString(href)
+	if datetime == "" {
+		a.date = fmt.Sprintf("<No date detected in href '%s'>", href)
+	} else {
+		t, err := time.Parse("2006-01-02", datetime)
+		if err != nil {
+			a.date = fmt.Sprintf("<No date detected in href '%s'>, extracted datetime '%s'", href, datetime)
+		}
+		a.date = t.Format("Jan. 2006")
+	}
+	return a.date
 }
 
 func (a *article) markdown() string {
 	e := a.e
-	t, err := time.Parse("2006-01-02", e.ChildAttr("time", "datetime"))
-	if err != nil {
-		log.Fatal(err)
-	}
-	date := t.Format("Jan. 2006")
-	m := fmt.Sprintf("> ## [%s](%s) (%s)\n", a.title(), a.href(), date)
+	m := fmt.Sprintf("> ## [%s](%s) (%s)\n", a.getTitle(), a.getHref(), a.getDate())
 
-	body := e.DOM.Find(".post__content")
+	body := e.DOM.Find(".post__content").First()
 	//fmt.Printf("Body '%+v'\n", body)
 	m = m + visitNodes(body)
 	return m

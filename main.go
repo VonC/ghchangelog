@@ -244,6 +244,8 @@ func visitNodes(sel *goquery.Selection) string {
 				m = m + "> "
 			}
 			m = m + fmt.Sprintf("[%s](%s)", txt, href)
+		case "pre":
+			m = m + ">\n> " + visitNodes(sel) + "\n"
 		case "code":
 			txt := sel.Text()
 			m = m + fmt.Sprintf("`%s`", txt)

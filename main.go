@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"log"
 	"net/url"
@@ -245,10 +246,29 @@ func visitNodes(sel *goquery.Selection) string {
 			}
 			m = m + fmt.Sprintf("[%s](%s)", txt, href)
 		case "pre":
-			m = m + ">\n> " + visitNodes(sel) + "\n"
+			// ghchangelog.exe https://github.blog/changelog/2022-10-11-github-actions-deprecating-save-state-and-set-output-commands/
+			m = m + "> ```" + visitNodes(sel) + ">```\n"
 		case "code":
-			txt := sel.Text()
-			m = m + fmt.Sprintf("`%s`", txt)
+			if !hasParentNamed(parentName, "pre") {
+				txt := sel.Text()
+				m = m + fmt.Sprintf("`%s`", txt)
+			} else {
+				codeClass := sel.AttrOr("class", "")
+				codeClass = strings.ReplaceAll(codeClass, "language-", "")
+				txt := visitNodes(sel)
+				quoteTxt := ""
+				// https://stackoverflow.com/questions/25080862/how-to-strings-split-on-newline
+				sc := bufio.NewScanner(strings.NewReader(txt))
+				for sc.Scan() {
+					line := sc.Text()
+					quote := "> "
+					if strings.HasPrefix(line, ">") {
+						quote = ""
+					}
+					quoteTxt = quoteTxt + quote + line + "\n"
+				}
+				m = m + codeClass + "\n" + quoteTxt
+			}
 		case "strong":
 			txt := sel.Text()
 			m = m + fmt.Sprintf("**%s**", txt)
